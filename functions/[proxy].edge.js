@@ -1,14 +1,11 @@
 export default async function handler(request) {
-  const url = new URL(request.url);
+  const modifiedUrl = new URL(request.url);
+  const route = modifiedUrl.pathname;
 
-  if (url.pathname === "/about") {
-    return Response.redirect(new URL("/contact", request.url), 302);
+  if (route === "/about") {
+    modifiedUrl.pathname = "/contact";
+    return Response.redirect(modifiedUrl, 302);
   }
 
-  // Pass through all other requests
-  return;
+  return fetch(request);
 }
-
-export const config = {
-  path: "/*",
-};
