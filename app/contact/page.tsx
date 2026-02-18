@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { getContactMethods, ContactMethod } from "@/lib/contentstack";
 
-const getIcon = (iconType: ContactMethod['icon_type']) => {
-  switch (iconType) {
-    case "email":
-      return (
+export default function Contact() {
+  const contactMethods = [
+    {
+      title: "Email",
+      value: "hello@testapp.com",
+      icon: (
         <svg
           className="w-6 h-6"
           fill="none"
@@ -18,9 +19,12 @@ const getIcon = (iconType: ContactMethod['icon_type']) => {
             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
           />
         </svg>
-      );
-    case "phone":
-      return (
+      ),
+    },
+    {
+      title: "Phone",
+      value: "+1 (555) 123-4567",
+      icon: (
         <svg
           className="w-6 h-6"
           fill="none"
@@ -34,9 +38,12 @@ const getIcon = (iconType: ContactMethod['icon_type']) => {
             d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
           />
         </svg>
-      );
-    case "address":
-      return (
+      ),
+    },
+    {
+      title: "Address",
+      value: "123 Innovation St, Tech City, TC 12345",
+      icon: (
         <svg
           className="w-6 h-6"
           fill="none"
@@ -56,15 +63,9 @@ const getIcon = (iconType: ContactMethod['icon_type']) => {
             d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
           />
         </svg>
-      );
-    default:
-      return null;
-  }
-};
-
-export default async function Contact() {
-  // Fetch contact methods from Contentful
-  const contactMethods = await getContactMethods();
+      ),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -127,34 +128,26 @@ export default async function Contact() {
               </div>
 
               <div className="space-y-6">
-                {contactMethods.length > 0 ? (
-                  contactMethods.map((method, index) => (
-                    <div
-                      key={index}
-                      className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all hover:-translate-y-1 duration-300"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900 dark:to-teal-900 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0 shadow-md">
-                          {getIcon(method.icon_type)}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-200">
-                            {method.title}
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-400 break-words">
-                            {method.value}
-                          </p>
-                        </div>
+                {contactMethods.map((method, index) => (
+                  <div
+                    key={index}
+                    className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all hover:-translate-y-1 duration-300"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900 dark:to-teal-900 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0 shadow-md">
+                        {method.icon}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-200">
+                          {method.title}
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400 break-words">
+                          {method.value}
+                        </p>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-6 border border-yellow-200 dark:border-yellow-800">
-                    <p className="text-yellow-800 dark:text-yellow-200 text-center">
-                      Contact information is being loaded...
-                    </p>
                   </div>
-                )}
+                ))}
               </div>
 
               <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-6 text-white">
