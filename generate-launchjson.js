@@ -1,46 +1,52 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-function findPageFiles(dir) {
-  const results = [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      results.push(...findPageFiles(fullPath));
-    } else if (/^page\.(tsx|ts|jsx|js)$/.test(entry.name)) {
-      results.push(fullPath);
-    }
-  }
-  return results;
+const CACHE_FLAG = /export\s+const\s+cachePrimingEnabled\s*=\s*true/;
+const DYNAMIC_SEGMENT = /\[.+?\]/;
+
+function findFiles(dir, match) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    return entry.isDirectory() ? findFiles(full, match) : match(entry.name) ? [full] : [];
+  });
 }
 
 function pagePathToUrl(filePath) {
-  const appDir = path.join(__dirname, 'app');
-  const relative = path.relative(appDir, filePath);
-  const dir = path.dirname(relative);
-  return dir === '.' ? '/' : `/${dir.replace(/\\/g, '/')}`;
+  const dir = path.dirname(path.relative(path.join(__dirname, "app"), filePath));
+  return dir === "." ? "/" : `/${dir.replace(/\\/g, "/")}`;
 }
 
-const appDir = path.join(__dirname, 'app');
-const pageFiles = findPageFiles(appDir);
-
-const urls = [];
-for (const filePath of pageFiles) {
-  const content = fs.readFileSync(filePath, 'utf8');
-  if (/export\s+const\s+cachePrimingEnabled\s*=\s*true/.test(content)) {
-    urls.push(pagePathToUrl(filePath));
-  }
+function resolveUrlsFromBuildOutput(routePattern) {
+  const routeRegex = new RegExp(
+    "^" + routePattern.replace(/\[(?:\.\.\.)?\w+\]/g, "[^/]+") + "$"
+  );
+  const seen = new Set();
+  return [
+    path.join(__dirname, ".next", "server", "app"),   // App Router
+    path.join(__dirname, ".next", "server", "pages"),  // Pages Router
+  ].flatMap((buildDir) =>
+    findFiles(buildDir, (name) => name.endsWith(".html")).reduce((acc, file) => {
+      let url = "/" + path.relative(buildDir, file).replace(/\\/g, "/").replace(/\.html$/, "");
+      if (url.endsWith("/index")) url = url.slice(0, -6) || "/";
+      if (routeRegex.test(url) && !seen.has(url)) { seen.add(url); acc.push(url); }
+      return acc;
+    }, [])
+  );
 }
 
-const launchJson = {
-  cache: {
-    cachePriming: {
-      urls,
-    },
-  },
-};
+const urls = findFiles(path.join(__dirname, "app"), (name) => /^page\.(tsx|ts|jsx|js)$/.test(name))
+  .filter((file) => CACHE_FLAG.test(fs.readFileSync(file, "utf8")))
+  .flatMap((file) => {
+    const url = pagePathToUrl(file);
+    if (!DYNAMIC_SEGMENT.test(url)) return [url];
+    const resolved = resolveUrlsFromBuildOutput(url);
+    if (resolved.length === 0) console.warn(`No pre-rendered pages found for ${url} — ensure generateStaticParams is exported.`);
+    return resolved;
+  });
 
-const outputPath = path.join(__dirname, 'launch.json');
-fs.writeFileSync(outputPath, JSON.stringify(launchJson, null, 2) + '\n');
+fs.writeFileSync(
+  path.join(__dirname, "launch.json"),
+  JSON.stringify({ cache: { cachePriming: { urls } } }, null, 2) + "\n"
+);
 console.log(`Generated launch.json with ${urls.length} URL(s):`, urls);
