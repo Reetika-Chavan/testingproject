@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+export const cachePrimingEnabled = true;
+
 export default function Contact() {
   const contactMethods = [
     {
