@@ -2,11 +2,15 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-const TARGET_SIZE_MB = 6;
-const TARGET_CHARS = TARGET_SIZE_MB * 1024 * 1024;
+type Props = {
+  searchParams: Promise<{ size?: string }>;
+};
 
-export default async function LargeResponseTest() {
-  const bigString = "X".repeat(TARGET_CHARS);
+export default async function LargeResponseTest({ searchParams }: Props) {
+  const params = await searchParams;
+  const sizeMB = Math.min(Math.max(parseFloat(params.size || "1"), 0.1), 5);
+  const targetChars = Math.ceil(sizeMB * 1024 * 1024);
+  const bigString = "X".repeat(targetChars);
 
   return (
     <div>
@@ -14,8 +18,14 @@ export default async function LargeResponseTest() {
         <Link href="/">Home</Link> | <Link href="/ssr-demo">SSR Demo</Link>
       </nav>
       <main style={{ padding: "24px" }}>
-        <h1>Large Response Test (~{TARGET_SIZE_MB} MB)</h1>
-        <p>Target: ~{TARGET_SIZE_MB} MB | Characters: {TARGET_CHARS.toLocaleString()} | Rendered: {new Date().toISOString()}</p>
+        <h1>Large Response Test (~{sizeMB} MB content)</h1>
+        <p>
+          Content size: {sizeMB} MB ({targetChars.toLocaleString()} chars) |
+          Rendered: {new Date().toISOString()}
+        </p>
+        <p style={{ fontSize: "12px", color: "#666" }}>
+          Use ?size=N to adjust (in MB, max 5).
+        </p>
         <div style={{ maxHeight: "200px", overflow: "hidden", wordBreak: "break-all", fontSize: "10px", color: "#999" }}>
           {bigString}
         </div>
