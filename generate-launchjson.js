@@ -35,7 +35,7 @@ function resolveUrlsFromBuildOutput(routePattern) {
   );
 }
 
-const urls = findFiles(path.join(__dirname, "app"), (name) => /^page\.(tsx|ts|jsx|js)$/.test(name))
+const generatedUrls = findFiles(path.join(__dirname, "app"), (name) => /^page\.(tsx|ts|jsx|js)$/.test(name))
   .filter((file) => CACHE_FLAG.test(fs.readFileSync(file, "utf8")))
   .flatMap((file) => {
     const url = pagePathToUrl(file);
@@ -45,8 +45,12 @@ const urls = findFiles(path.join(__dirname, "app"), (name) => /^page\.(tsx|ts|js
     return resolved;
   });
 
-fs.writeFileSync(
-  path.join(__dirname, "launch.json"),
-  JSON.stringify({ cache: { cachePriming: { urls } } }, null, 2) + "\n"
-);
+const launchJsonPath = path.join(__dirname, "launch.json");
+const existing = fs.existsSync(launchJsonPath)
+  ? JSON.parse(fs.readFileSync(launchJsonPath, "utf8"))
+  : {};
+const existingUrls = existing?.cache?.cachePriming?.urls ?? [];
+const urls = [...new Set([...existingUrls, ...generatedUrls])];
+
+fs.writeFileSync(launchJsonPath, JSON.stringify({ cache: { cachePriming: { urls } } }, null, 2) + "\n");
 console.log(`Generated launch.json with ${urls.length} URL(s):`, urls);
