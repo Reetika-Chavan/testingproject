@@ -15,7 +15,7 @@ export default async function LargeResponseTest({ searchParams }: Props) {
   return (
     <div>
       <nav style={{ padding: "24px" }}>
-        <Link href="/">Home</Link> | <Link href="/ssr-demo">SSR Demo</Link>
+        <Link href="/">Home</Link> | <Link href="/ssr-demo">SSR Demo</Link> | <Link href="/streaming-test">Streaming Test</Link>
       </nav>
       <main style={{ padding: "24px" }}>
         <h1>Large Response Test (~{sizeMB} MB content)</h1>
