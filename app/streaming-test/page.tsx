@@ -56,14 +56,14 @@ export default function StreamingTestPage() {
   }
 
   return (
-    <div style={{ padding: "24px", maxWidth: "700px", fontFamily: "sans-serif" }}>
+    <div style={{ padding: "24px", maxWidth: "700px", fontFamily: "sans-serif", color: "#1a1a1a" }}>
       <nav style={{ marginBottom: "24px" }}>
         <Link href="/">Home</Link> |{" "}
         <Link href="/large-response-test">Large Response Test</Link>
       </nav>
 
       <h1>Transfer-Encoding: Chunked Streaming Test</h1>
-      <p style={{ color: "#666", marginBottom: "24px" }}>
+      <p style={{ color: "#333", marginBottom: "24px" }}>
         This replicates the iODigital customer use case. Click a button below.
         <strong> If streaming works:</strong> text should appear word-by-word
         incrementally. <strong>If buffered (Launch issue):</strong> the full
@@ -116,7 +116,7 @@ export default function StreamingTestPage() {
       </div>
 
       {loading && (
-        <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>
+        <p style={{ color: "#333", fontSize: "14px", marginBottom: "8px" }}>
           Streaming…
         </p>
       )}
@@ -133,13 +133,14 @@ export default function StreamingTestPage() {
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
               marginBottom: "16px",
+              color: "#1a1a1a",
             }}
           >
             {output}
           </div>
 
           {(startTime || firstChunkTime || doneTime) && (
-            <div style={{ fontSize: "13px", color: "#666" }}>
+            <div style={{ fontSize: "13px", color: "#333" }}>
               {startTime && (
                 <p>Request started: {new Date(startTime).toISOString()}</p>
               )}
